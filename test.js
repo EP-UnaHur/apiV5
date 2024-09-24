@@ -1,15 +1,15 @@
-const numeros = [1, 3, 6, 7] 
+const seriesSchema = require('./src/schemas/series.schema')
 
 
-const sumar = (...arg)=> {
-    let acum = 0
-    arg.forEach(e=> acum += e)
-    return acum
-}
 
-console.log(sumar(...numeros))
-
-console.log(Math.min(...numeros))
+const resultado = seriesSchema.validate( {
+    "nombre": "alerta roja",
+  "plataforma": "star++",
+  "disponible": false,
+  "fafhdashf":"Fafadsfasd"
+}, {abortEarly:false}
+)
+console.log(resultado.error)
 
 
 
