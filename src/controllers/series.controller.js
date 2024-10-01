@@ -1,4 +1,5 @@
-const { Series } = require('../models')
+const { Model } = require('sequelize')
+const { Series, Temporada, Capitulo } = require('../models')
 const series = require('../models/series')
 const controller = {}
 
@@ -10,7 +11,17 @@ controller.getAllSeries = getAllSeries
 
 const getSerieById= async (req, res)=>{
     const id = req.params.id
-    const serie = await Series.findByPk(id)
+    const serie = await Series.findOne( {
+        where: {id},
+        include: {
+            model: Temporada,
+            as: 'seasons',
+            include: {
+                model: Capitulo,
+                as: 'episodios'
+            }
+        }
+    })
     res.status(200).json(serie)
 }
 controller.getSerieById = getSerieById
