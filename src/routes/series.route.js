@@ -33,6 +33,8 @@ route.post('/series/:id/temporadas',
 
 route.put('/series/:id', schemaValidator(seriesSchema), seriesMiddleware.validateIdSerie, seriesController.updateSerie)
 
+route.post('/series/:id/actores', seriesMiddleware.validateIdSerie, seriesController.addActorToSerie)
+route.post('/series/:id/actor', seriesMiddleware.validateIdSerie, seriesController.addOrFindActorToSerie)
 
 
 module.exports = route

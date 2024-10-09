@@ -1,6 +1,7 @@
 const { Model } = require('sequelize')
-const { Series, Temporada, Capitulo } = require('../models')
+const { Series, Temporada, Capitulo, Actor } = require('../models')
 const series = require('../models/series')
+const { defaults } = require('joi')
 const controller = {}
 
 const getAllSeries = async (req, res) =>{
@@ -13,14 +14,20 @@ const getSerieById= async (req, res)=>{
     const id = req.params.id
     const serie = await Series.findOne( {
         where: {id},
-        include: {
-            model: Temporada,
-            as: 'seasons',
-            include: {
-                model: Capitulo,
-                as: 'episodios'
-            }
-        }
+        include: [
+                {
+                    model: Actor,
+                    as: 'Actors'
+                },
+                {
+                    model: Temporada,
+                    as: 'seasons',
+                    include: [{
+                        model: Capitulo,
+                        as: 'episodios'
+                    }]
+                }
+            ]
     })
     res.status(200).json(serie)
 }
@@ -56,5 +63,40 @@ const updateSerie = async (req, res) => {
 }
 controller.updateSerie = updateSerie
 
+
+const addActorToSerie = async (req, res) => {
+    const arrayActores = req.body
+    const id = req.params.id
+    const serie = await Series.findByPk(id) 
+     
+    let promesas = [];
+    arrayActores.forEach(actor => {
+        promesas.push( Actor.create(actor) )
+    });
+    const actores = await Promise.all(promesas)
+    serie.addActors(actores)
+    res.status(201).json({message: 'Actor agregado a la serie'})
+}
+controller.addActorToSerie = addActorToSerie
+
+const addOrFindActorToSerie = async (req, res) => {
+    const {id, nombre, fechaNacimiento, nombreArtistico} = req.body
+    const idSerie = req.params.id
+    const serie = await Series.findByPk(idSerie) 
+ 
+    const [actor, _ ] = await Actor.findOrCreate(
+        {
+            where: {id: id || 0} , 
+            defaults: {
+                id: null,
+                nombre, 
+                fechaNacimiento, 
+                nombreArtistico
+            }
+        })
+    serie.addActors([actor])
+    res.status(201).json({message: 'Actor agregado a la serie'})
+}
+controller.addOrFindActorToSerie = addOrFindActorToSerie
 
 module.exports = controller
